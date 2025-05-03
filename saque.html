@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Saque - Darling Business Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #03dac6;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      margin-top: 20px;
+      background: #03dac6;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .alert {
+      margin-top: 20px;
+      color: red;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Solicitar Saque</h2>
+  <form id="saqueForm">
+    <label for="nome">Nome Completo</label>
+    <input type="text" id="nome" required>
+
+    <label for="metodo">Método de Saque</label>
+    <select id="metodo" required>
+      <option value="IBAN">IBAN (BFA)</option>
+      <option value="BINANCE">Binance</option>
+      <option value="EXPRESS">Express</option>
+    </select>
+
+    <label for="identificador">IBAN / E-mail da Binance / Número do Express</label>
+    <input type="text" id="identificador" required>
+
+    <button type="submit">Solicitar</button>
+    <div class="alert" id="mensagem"></div>
+  </form>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDNLUJxZ1uPYFbR68VKnE_NAmrXz-RPfyY",
+      authDomain: "darling-willian.firebaseapp.com",
+      projectId: "darling-willian",
+      storageBucket: "darling-willian.appspot.com",
+      messagingSenderId: "421769484250",
+      appId: "1:421769484250:web:ba250d2282cd27802cb442"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      const uid = user.uid;
+      const userDoc = await db.collection("usuarios").doc(uid).get();
+      const data = userDoc.data();
+      const pontos = data.pontos || 0;
+      const vip = data.vip || false;
+      const limiteSaque = vip ? 1500 : 500;
+
+      document.getElementById("saqueForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("nome").value.trim();
+        const metodo = document.getElementById("metodo").value;
+        const identificador = document.getElementById("identificador").value.trim();
+        const mensagem = document.getElementById("mensagem");
+
+        if (pontos < limiteSaque) {
+          mensagem.textContent = `Você precisa de no mínimo ${limiteSaque} pontos para sacar.`;
+          return;
+        }
+
+        const query = await db.collection("saques")
+          .where("identificador", "==", identificador)
+          .get();
+
+        if (!query.empty) {
+          mensagem.textContent = "Este identificador já foi usado por outro usuário.";
+          return;
+        }
+
+        await db.collection("saques").add({
+          uid,
+          nome,
+          metodo,
+          identificador,
+          pontos,
+          data: new Date().toISOString()
+        });
+
+        mensagem.style.color = "lightgreen";
+        mensagem.textContent = "Saque solicitado com sucesso!";
+      });
+    });
+  </script>
+</body>
+</html>
