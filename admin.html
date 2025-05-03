@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Saques Solicitados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #03dac6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #1f1f1f;
+    }
+    tr:nth-child(even) {
+      background-color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <h2>Solicitações de Saque</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Método</th>
+        <th>Identificador</th>
+        <th>Pontos</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-saques">
+      <!-- Linhas serão adicionadas aqui -->
+    </tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDNLUJxZ1uPYFbR68VKnE_NAmrXz-RPfyY",
+      authDomain: "darling-willian.firebaseapp.com",
+      projectId: "darling-willian",
+      storageBucket: "darling-willian.appspot.com",
+      messagingSenderId: "421769484250",
+      appId: "1:421769484250:web:ba250d2282cd27802cb442"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function carregarSaques() {
+      const tabela = document.getElementById("tabela-saques");
+      const saques = await db.collection("saques").orderBy("data", "desc").get();
+      saques.forEach(doc => {
+        const dados = doc.data();
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${dados.nome}</td>
+          <td>${dados.metodo}</td>
+          <td>${dados.identificador}</td>
+          <td>${dados.pontos}</td>
+          <td>${new Date(dados.data).toLocaleString()}</td>
+        `;
+        tabela.appendChild(linha);
+      });
+    }
+
+    carregarSaques();
+  </script>
+</body>
+</html>
