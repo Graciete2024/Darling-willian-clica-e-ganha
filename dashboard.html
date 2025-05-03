@@ -1,155 +1,114 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - Darling</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
-  <!-- PropellerAds (Monetag) -->
-  <script data-cfasync="false" type="text/javascript"
-    src="//pl22671516.profitablegatecpm.com/e2e1b02ab54c701e1c44d007726c90bd/invoke.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Darling Business Earn</title>
   <style>
     body {
       background-color: #121212;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header, .main {
       padding: 20px;
     }
-
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .saldo {
+    .card {
       background-color: #1e1e1e;
-      padding: 20px;
+      padding: 15px;
       border-radius: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 5px rgba(255,255,255,0.1);
     }
-
     button {
-      background-color: #03dac6;
-      border: none;
-      padding: 15px;
-      border-radius: 8px;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    .vip-info {
-      margin-top: 20px;
-      background-color: #1a1a1a;
-      padding: 15px;
-      border-radius: 8px;
-    }
-
-    .logout {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .logout button {
-      background-color: #ff1744;
+      background-color: #4caf50;
       color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-
-    #anuncio {
-      margin: 20px auto;
-      text-align: center;
+    button:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h2>Bem-vindo à Darling Business Earn</h2>
+
+<div class="header">
+  <h1>Bem-vindo ao Dashboard</h1>
+  <p id="pontos">Pontos: ... | $...</p>
+  <button onclick="logout()">Sair</button>
+</div>
+
+<div class="main">
+  <div class="card">
+    <h3>Ganhe Pontos</h3>
+    <button onclick="ganharPontos()">Assistir Anúncio</button>
   </div>
-
-  <div class="saldo">
-    <h3>Seu Saldo</h3>
-    <p id="pontos">Pontos: ...</p>
-    <p id="dolares">$...</p>
+  <div class="card">
+    <h3>Status VIP</h3>
+    <p id="vipStatus">Carregando...</p>
   </div>
-
-  <button onclick="ganharPontos()">Assistir Anúncio</button>
-
-  <div class="vip-info">
-    <p id="statusVip">Plano: ...</p>
-    <p id="bonusInfo">Bônus: ...</p>
+  <div class="card">
+    <a href="vip.html"><button>Ativar VIP</button></a>
+    <a href="saque.html"><button>Solicitar Saque</button></a>
   </div>
+</div>
 
-  <div class="logout">
-    <button onclick="logout()">Sair</button>
-  </div>
+<!-- Scripts -->
+<script type="module">
+  import { auth, db } from './firebase.js';
+  import { doc, getDoc, updateDoc } from "firebase/firestore";
+  import { onAuthStateChanged, signOut } from "firebase/auth";
 
-  <div id="anuncio">
-    <!-- Container do anúncio Monetag -->
-    <div id="container-e2e1b02ab54c701e1c44d007726c90bd"></div>
-  </div>
+  function atualizarInterface(user, dados) {
+    const pontos = dados.pontos || 0;
+    const vip = dados.vip ? "Ativo" : "Inativo";
+    const dolares = (pontos / 100).toFixed(2);
+    document.getElementById("pontos").innerText = `Pontos: ${pontos} | $${dolares}`;
+    document.getElementById("vipStatus").innerText = `VIP: ${vip}`;
+  }
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDNLUJxZ1uPYFbR68VKnE_NAmrXz-RPfyY",
-      authDomain: "darling-willian.firebaseapp.com",
-      projectId: "darling-willian",
-      storageBucket: "darling-willian.appspot.com",
-      messagingSenderId: "421769484250",
-      appId: "1:421769484250:web:ba250d2282cd27802cb442"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  async function ganharPontos() {
+    const user = auth.currentUser;
+    if (user) {
+      const ref = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(ref);
+      const pontos = (snap.data().pontos || 0) + 10;
+      await updateDoc(ref, { pontos });
+      atualizarInterface(user, { ...snap.data(), pontos });
+      alert("Você ganhou 10 pontos!");
+    }
+  }
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        carregarDados(user.uid);
-      } else {
-        window.location.href = "login.html";
-      }
+  function logout() {
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
     });
+  }
 
-    async function carregarDados(uid) {
-      const doc = await db.collection("usuarios").doc(uid).get();
-      const dados = doc.data();
-      const pontos = dados.pontos || 0;
-      const vip = dados.vip || false;
-      const bonus = vip ? "10%" : "0%";
-      const dolares = (pontos / 100).toFixed(2);
-
-      document.getElementById("pontos").innerText = `Pontos: ${pontos}`;
-      document.getElementById("dolares").innerText = `$${dolares}`;
-      document.getElementById("statusVip").innerText = `Plano: ${vip ? "VIP" : "Normal"}`;
-      document.getElementById("bonusInfo").innerText = `Bônus: ${bonus}`;
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const ref = doc(db, "usuarios", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        atualizarInterface(user, snap.data());
+      }
+    } else {
+      window.location.href = "index.html";
     }
+  });
 
-    async function ganharPontos() {
-      const user = auth.currentUser;
-      if (!user) return;
+  window.ganharPontos = ganharPontos;
+  window.logout = logout;
+</script>
 
-      const docRef = db.collection("usuarios").doc(user.uid);
-      const doc = await docRef.get();
-      const dados = doc.data();
-      let pontos = dados.pontos || 0;
-      const vip = dados.vip || false;
-      pontos += vip ? 110 : 100;
+<!-- AdSense / PropellerAds script (ajuste conforme sua integração) -->
+<script src="https://propu.sh/pfe/current/tag.min.js?z=7301773" data-cfasync="false" async></script>
 
-      await docRef.update({ pontos });
-
-      carregarDados(user.uid);
-    }
-
-    function logout() {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    }
-  </script>
 </body>
 </html>
