@@ -2,24 +2,28 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
+  <title>Criar Conta - Darling Business Earn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro - Darling Business Earn</title>
   <style>
     body {
       background-color: #121212;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #00ffcc;
     }
     input, button {
-      display: block;
-      margin: 15px auto;
       padding: 12px;
+      margin: 10px 0;
       width: 90%;
-      max-width: 300px;
+      max-width: 350px;
+      border-radius: 8px;
       border: none;
-      border-radius: 5px;
     }
     input {
       background-color: #1e1e1e;
@@ -27,25 +31,29 @@
     }
     button {
       background-color: #00ffcc;
-      color: #000;
+      color: black;
       font-weight: bold;
       cursor: pointer;
     }
-    h1 {
+    a {
       color: #00ffcc;
+      text-decoration: none;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Criar Conta</h1>
-  <input type="text" id="nome" placeholder="Nome completo" required />
-  <input type="email" id="email" placeholder="E-mail" required />
-  <input type="password" id="senha" placeholder="Senha" required />
-  <button onclick="criarConta()">Cadastrar</button>
-  <p id="mensagem"></p>
+  <input type="text" id="nome" placeholder="Nome completo" />
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="senha" placeholder="Senha" />
+  <button onclick="cadastrar()">Cadastrar</button>
+  <a href="index.html">Já tenho conta</a>
+
+  <!-- Monetag Ads -->
+  <script data-cfasync="false" type="text/javascript" src="//www.monetag.com/a/display.php?r=9931768"></script>
 
   <script type="module">
-    // Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -64,31 +72,29 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    window.criarConta = () => {
+    async function cadastrar() {
       const nome = document.getElementById("nome").value;
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
-      const msg = document.getElementById("mensagem");
 
-      createUserWithEmailAndPassword(auth, email, senha)
-        .then(async (userCredential) => {
-          const user = userCredential.user;
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+        const uid = userCredential.user.uid;
 
-          await setDoc(doc(db, "usuarios", user.uid), {
-            nome: nome,
-            email: email,
-            pontos: 0,
-            vip: false,
-            bonus: 0
-          });
-
-          msg.textContent = "Conta criada com sucesso!";
-          window.location.href = "dashboard.html";
-        })
-        .catch((error) => {
-          msg.textContent = "Erro: " + error.message;
+        await setDoc(doc(db, "usuarios", uid), {
+          nome: nome,
+          email: email,
+          pontos: 0,
+          vip: false
         });
-    };
+
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        alert("Erro ao cadastrar: " + error.message);
+      }
+    }
+
+    window.cadastrar = cadastrar;
   </script>
 </body>
 </html>
