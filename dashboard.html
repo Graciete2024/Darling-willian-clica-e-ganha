@@ -1,59 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Dashboard - Darling Business Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background-color: #121212;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
-      text-align: center;
+      margin: 0;
       padding: 20px;
     }
-    h1 {
-      color: #00ffcc;
+    .topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .card {
-      background-color: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 20px auto;
-      width: 90%;
-      max-width: 400px;
+    .saldo {
+      font-size: 20px;
+      font-weight: bold;
     }
     button {
       background-color: #00ffcc;
-      color: black;
-      padding: 15px 30px;
-      font-size: 16px;
       border: none;
+      padding: 12px 20px;
       border-radius: 8px;
+      color: black;
+      font-weight: bold;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 20px;
     }
-    #logout {
-      background-color: crimson;
-      color: white;
+    .vip {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+    }
+    .logout {
+      margin-top: 30px;
+      color: #00ffcc;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Bem-vindo!</h1>
-  <div class="card">
-    <h2 id="pontos">Pontos: 0 | $0.00</h2>
-    <button onclick="assistirAnuncio()">Assistir Anúncio</button>
-    <p id="vipStatus">Plano: Normal</p>
-    <p id="bonusInfo">Bônus: 0</p>
+  <div class="topo">
+    <div id="boasVindas">Bem-vindo</div>
+    <div class="saldo" id="pontosDisplay">Pontos: 0 | $0.00</div>
   </div>
-  <button id="logout" onclick="logout()">Sair</button>
 
-  <!-- Monetag Popunder -->
+  <button onclick="assistirAnuncio()">Assistir Anúncio</button>
+
+  <div class="vip" id="statusVip">Plano: Normal</div>
+
+  <div class="logout" onclick="logout()">Sair</div>
+
+  <!-- Monetag Ads -->
   <script data-cfasync="false" type="text/javascript" src="//www.monetag.com/a/display.php?r=9931768"></script>
-  <!-- Interstitial -->
-  <script async="async" data-cfasync="false" src="//pl20952997.profitablegatecpm.com/abefc729ce1e4a1b58f7c1f4f5de7f0d/invoke.js"></script>
-  <div id="container-abefc729ce1e4a1b58f7c1f4f5de7f0d"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -74,44 +79,34 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const pontosEl = document.getElementById("pontos");
-    const vipEl = document.getElementById("vipStatus");
-    const bonusEl = document.getElementById("bonusInfo");
-
-    let usuarioRef;
+    let usuarioRef = null;
+    let usuarioData = null;
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         usuarioRef = doc(db, "usuarios", user.uid);
         const docSnap = await getDoc(usuarioRef);
-
         if (docSnap.exists()) {
-          const dados = docSnap.data();
-          atualizarTela(dados);
+          usuarioData = docSnap.data();
+          document.getElementById("boasVindas").innerText = "Olá, " + usuarioData.nome;
+          atualizarDashboard();
         }
       } else {
         window.location.href = "index.html";
       }
     });
 
-    function atualizarTela(dados) {
-      const pontos = dados.pontos || 0;
-      const vip = dados.vip ? "VIP" : "Normal";
-      const bonus = dados.bonus || 0;
-      const dolares = (pontos / 100).toFixed(2);
-      pontosEl.textContent = `Pontos: ${pontos} | $${dolares}`;
-      vipEl.textContent = `Plano: ${vip}`;
-      bonusEl.textContent = `Bônus: ${bonus}`;
+    async function assistirAnuncio() {
+      if (!usuarioRef) return;
+      usuarioData.pontos += 100;
+      await updateDoc(usuarioRef, { pontos: usuarioData.pontos });
+      atualizarDashboard();
     }
 
-    async function assistirAnuncio() {
-      const docSnap = await getDoc(usuarioRef);
-      if (docSnap.exists()) {
-        let dados = docSnap.data();
-        let novosPontos = (dados.pontos || 0) + 10;
-        await updateDoc(usuarioRef, { pontos: novosPontos });
-        atualizarTela({ ...dados, pontos: novosPontos });
-      }
+    function atualizarDashboard() {
+      const dolares = (usuarioData.pontos / 100).toFixed(2);
+      document.getElementById("pontosDisplay").innerText = `Pontos: ${usuarioData.pontos} | $${dolares}`;
+      document.getElementById("statusVip").innerText = usuarioData.vip ? "Plano: VIP" : "Plano: Normal";
     }
 
     function logout() {
@@ -119,6 +114,9 @@
         window.location.href = "index.html";
       });
     }
+
+    window.assistirAnuncio = assistirAnuncio;
+    window.logout = logout;
   </script>
 </body>
 </html>
