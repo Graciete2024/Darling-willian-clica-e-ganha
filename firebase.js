@@ -1,23 +1,23 @@
-// Importação do Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Configuração real do seu projeto Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyD3voRUhhaJUSiYUc7WnsN8iMXsNn84UNM",
-  authDomain: "darling-clica-e-ganha.firebaseapp.com",
-  projectId: "darling-clica-e-ganha",
-  storageBucket: "darling-clica-e-ganha.firebasestorage.app",
-  messagingSenderId: "993176761999",
-  appId: "1:993176761999:web:d6a10be0f2e4f42237e2fa",
-  measurementId: "G-64JM6D3QS2"
-};
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyD3voRUhhaJUSiYUc7WnsN8iMXsNn84UNM",
+    authDomain: "darling-clica-e-ganha.firebaseapp.com",
+    projectId: "darling-clica-e-ganha",
+    storageBucket: "darling-clica-e-ganha.firebasestorage.app",
+    messagingSenderId: "993176761999",
+    appId: "1:993176761999:web:2b6b692ec80250b637e2fa",
+    measurementId: "G-ZTHNDPMTBN"
+  };
 
-// Inicialização do Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Exportar para uso nos outros arquivos
-export { auth, db };
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
