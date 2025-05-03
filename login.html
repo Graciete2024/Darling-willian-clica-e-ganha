@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Darling Business Earn</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      display: block;
+      margin: 15px auto;
+      padding: 12px;
+      width: 90%;
+      max-width: 300px;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      background-color: #1e1e1e;
+      color: white;
+    }
+    button {
+      background-color: #00ffcc;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    h1 {
+      color: #00ffcc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+  <input type="email" id="email" placeholder="E-mail" required />
+  <input type="password" id="password" placeholder="Senha" required />
+  <button onclick="fazerLogin()">Entrar</button>
+  <p id="mensagem"></p>
+
+  <script type="module">
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3voRUhhaJUSiYUc7WnsN8iMXsNn84UNM",
+      authDomain: "darling-clica-e-ganha.firebaseapp.com",
+      projectId: "darling-clica-e-ganha",
+      storageBucket: "darling-clica-e-ganha.firebasestorage.app",
+      messagingSenderId: "993176761999",
+      appId: "1:993176761999:web:2b6b692ec80250b637e2fa",
+      measurementId: "G-ZTHNDPMTBN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Função de login
+    window.fazerLogin = () => {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("password").value;
+      const msg = document.getElementById("mensagem");
+
+      signInWithEmailAndPassword(auth, email, senha)
+        .then((userCredential) => {
+          msg.textContent = "Login bem-sucedido!";
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          msg.textContent = "Erro: " + error.message;
+        });
+    };
+  </script>
+</body>
+</html>
