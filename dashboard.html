@@ -2,14 +2,16 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard - Darling Business Earn</title>
+  <title>Dashboard - Darling</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
-  <!-- Monetag Ads (PropellerAds) -->
-  <script data-cfasync="false" type="text/javascript" src="//upgulpinon.com/1?z=7194511"></script>
+  <!-- PropellerAds (Monetag) -->
+  <script data-cfasync="false" type="text/javascript"
+    src="//pl22671516.profitablegatecpm.com/e2e1b02ab54c701e1c44d007726c90bd/invoke.js"></script>
 
   <style>
     body {
@@ -18,105 +20,134 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
-    h2 {
-      color: #03dac6;
+
+    .header {
       text-align: center;
+      margin-bottom: 30px;
     }
+
     .saldo {
-      text-align: center;
-      margin: 20px 0;
-    }
-    .saldo span {
-      display: block;
-      font-size: 24px;
-    }
-    button {
-      width: 100%;
-      background: #03dac6;
-      color: black;
-      padding: 15px;
-      border: none;
+      background-color: #1e1e1e;
+      padding: 20px;
       border-radius: 10px;
-      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #03dac6;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      color: black;
+      font-weight: bold;
       cursor: pointer;
+      width: 100%;
+    }
+
+    .vip-info {
       margin-top: 20px;
+      background-color: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
     }
-    button:hover {
-      background: #02c2b0;
-    }
-    .links {
-      text-align: center;
+
+    .logout {
       margin-top: 30px;
+      text-align: center;
     }
-    .links a {
-      color: #03dac6;
-      text-decoration: none;
-      display: block;
-      margin: 10px 0;
+
+    .logout button {
+      background-color: #ff1744;
+      color: white;
+    }
+
+    #anuncio {
+      margin: 20px auto;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h2>Bem-vindo à Darling Business Earn</h2>
-  <div class="saldo">
-    <span id="pontos">Pontos: 0</span>
-    <span id="dolares">$0.00</span>
+  <div class="header">
+    <h2>Bem-vindo à Darling Business Earn</h2>
   </div>
-  <button onclick="assistirAnuncio()">Assistir Anúncio</button>
 
-  <div class="links">
-    <a href="vip.html">Plano VIP</a>
-    <a href="saque.html">Solicitar Saque</a>
-    <a href="#" onclick="logout()">Sair</a>
+  <div class="saldo">
+    <h3>Seu Saldo</h3>
+    <p id="pontos">Pontos: ...</p>
+    <p id="dolares">$...</p>
+  </div>
+
+  <button onclick="ganharPontos()">Assistir Anúncio</button>
+
+  <div class="vip-info">
+    <p id="statusVip">Plano: ...</p>
+    <p id="bonusInfo">Bônus: ...</p>
+  </div>
+
+  <div class="logout">
+    <button onclick="logout()">Sair</button>
+  </div>
+
+  <div id="anuncio">
+    <!-- Container do anúncio Monetag -->
+    <div id="container-e2e1b02ab54c701e1c44d007726c90bd"></div>
   </div>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyCNZL9KmVbM7D1m3fZlvTNgUXqS78a3NDo",
-      authDomain: "darling-willian-clica-e-ganha.firebaseapp.com",
-      projectId: "darling-willian-clica-e-ganha",
-      storageBucket: "darling-willian-clica-e-ganha.appspot.com",
-      messagingSenderId: "360974768097",
-      appId: "1:360974768097:web:a04e7c8e0e27dbdc7de3d3"
+      apiKey: "AIzaSyDNLUJxZ1uPYFbR68VKnE_NAmrXz-RPfyY",
+      authDomain: "darling-willian.firebaseapp.com",
+      projectId: "darling-willian",
+      storageBucket: "darling-willian.appspot.com",
+      messagingSenderId: "421769484250",
+      appId: "1:421769484250:web:ba250d2282cd27802cb442"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let userId;
-
     auth.onAuthStateChanged(user => {
       if (user) {
-        userId = user.uid;
-        carregarPontos();
+        carregarDados(user.uid);
       } else {
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       }
     });
 
-    function carregarPontos() {
-      db.collection("usuarios").doc(userId).get().then(doc => {
-        const dados = doc.data();
-        const pontos = dados.pontos || 0;
-        document.getElementById("pontos").textContent = "Pontos: " + pontos;
-        document.getElementById("dolares").textContent = "$" + (pontos / 100).toFixed(2);
-      });
+    async function carregarDados(uid) {
+      const doc = await db.collection("usuarios").doc(uid).get();
+      const dados = doc.data();
+      const pontos = dados.pontos || 0;
+      const vip = dados.vip || false;
+      const bonus = vip ? "10%" : "0%";
+      const dolares = (pontos / 100).toFixed(2);
+
+      document.getElementById("pontos").innerText = `Pontos: ${pontos}`;
+      document.getElementById("dolares").innerText = `$${dolares}`;
+      document.getElementById("statusVip").innerText = `Plano: ${vip ? "VIP" : "Normal"}`;
+      document.getElementById("bonusInfo").innerText = `Bônus: ${bonus}`;
     }
 
-    function assistirAnuncio() {
-      // Monetag popup ad trigger (fake ação)
-      window.open("https://www.google.com", "_blank");
+    async function ganharPontos() {
+      const user = auth.currentUser;
+      if (!user) return;
 
-      db.collection("usuarios").doc(userId).update({
-        pontos: firebase.firestore.FieldValue.increment(10)
-      }).then(() => {
-        carregarPontos();
-      });
+      const docRef = db.collection("usuarios").doc(user.uid);
+      const doc = await docRef.get();
+      const dados = doc.data();
+      let pontos = dados.pontos || 0;
+      const vip = dados.vip || false;
+      pontos += vip ? 110 : 100;
+
+      await docRef.update({ pontos });
+
+      carregarDados(user.uid);
     }
 
     function logout() {
       auth.signOut().then(() => {
-        window.location.href = "index.html";
+        window.location.href = "login.html";
       });
     }
   </script>
