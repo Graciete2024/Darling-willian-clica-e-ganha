@@ -1,136 +1,128 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Saque - Darling Business Earn</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
+  <title>Solicitar Saque</title>
   <style>
     body {
       background-color: #121212;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
+      color: #fff;
+      font-family: sans-serif;
       padding: 20px;
     }
-    h2 {
-      text-align: center;
-      color: #03dac6;
+    .card {
+      background-color: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
     }
-    form {
-      max-width: 500px;
-      margin: auto;
-    }
-    label {
+    input, select, button {
       display: block;
-      margin-top: 15px;
-    }
-    input, select {
+      margin-top: 10px;
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
+      border-radius: 5px;
       border: none;
     }
     button {
-      margin-top: 20px;
-      background: #03dac6;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      width: 100%;
-      font-weight: bold;
+      background-color: #4caf50;
+      color: white;
       cursor: pointer;
     }
-    .alert {
-      margin-top: 20px;
-      color: red;
-      text-align: center;
+    button:hover {
+      background-color: #43a047;
     }
   </style>
 </head>
 <body>
+
   <h2>Solicitar Saque</h2>
-  <form id="saqueForm">
-    <label for="nome">Nome Completo</label>
+  <div class="card">
+    <label for="nome">Nome completo do titular</label>
     <input type="text" id="nome" required>
 
-    <label for="metodo">Método de Saque</label>
-    <select id="metodo" required>
-      <option value="IBAN">IBAN (BFA)</option>
-      <option value="BINANCE">Binance</option>
-      <option value="EXPRESS">Express</option>
+    <label for="metodo">Método de saque</label>
+    <select id="metodo">
+      <option value="iban">IBAN (BFA Angola)</option>
+      <option value="binance">Binance (E-mail)</option>
+      <option value="express">Express (Número de telefone)</option>
     </select>
 
-    <label for="identificador">IBAN / E-mail da Binance / Número do Express</label>
+    <label for="identificador">IBAN / E-mail / Telefone</label>
     <input type="text" id="identificador" required>
 
-    <button type="submit">Solicitar</button>
-    <div class="alert" id="mensagem"></div>
-  </form>
+    <button onclick="solicitarSaque()">Enviar Solicitação</button>
+  </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDNLUJxZ1uPYFbR68VKnE_NAmrXz-RPfyY",
-      authDomain: "darling-willian.firebaseapp.com",
-      projectId: "darling-willian",
-      storageBucket: "darling-willian.appspot.com",
-      messagingSenderId: "421769484250",
-      appId: "1:421769484250:web:ba250d2282cd27802cb442"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<script type="module">
+  import { auth, db } from './firebase.js';
+  import { doc, getDoc, updateDoc, collection, addDoc, query, where, getDocs } from "firebase/firestore";
+  import { onAuthStateChanged } from "firebase/auth";
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
-      }
+  let usuarioAtual = null;
+  let dadosUsuario = null;
 
-      const uid = user.uid;
-      const userDoc = await db.collection("usuarios").doc(uid).get();
-      const data = userDoc.data();
-      const pontos = data.pontos || 0;
-      const vip = data.vip || false;
-      const limiteSaque = vip ? 1500 : 500;
+  async function solicitarSaque() {
+    const nome = document.getElementById("nome").value.trim();
+    const metodo = document.getElementById("metodo").value;
+    const identificador = document.getElementById("identificador").value.trim();
 
-      document.getElementById("saqueForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const nome = document.getElementById("nome").value.trim();
-        const metodo = document.getElementById("metodo").value;
-        const identificador = document.getElementById("identificador").value.trim();
-        const mensagem = document.getElementById("mensagem");
+    if (!nome || !identificador) {
+      alert("Preencha todos os campos.");
+      return;
+    }
 
-        if (pontos < limiteSaque) {
-          mensagem.textContent = `Você precisa de no mínimo ${limiteSaque} pontos para sacar.`;
-          return;
-        }
+    const q = query(collection(db, "saques"), where("identificador", "==", identificador));
+    const resultado = await getDocs(q);
+    if (!resultado.empty) {
+      alert("Este identificador já foi usado por outro usuário.");
+      return;
+    }
 
-        const query = await db.collection("saques")
-          .where("identificador", "==", identificador)
-          .get();
+    const pontos = dadosUsuario.pontos || 0;
+    const vip = dadosUsuario.vip || false;
+    const valorDolar = pontos / 100;
 
-        if (!query.empty) {
-          mensagem.textContent = "Este identificador já foi usado por outro usuário.";
-          return;
-        }
+    const limite = vip ? 15 : 5;
+    if (valorDolar < limite) {
+      alert(`Saque mínimo para seu plano é $${limite}. Você tem $${valorDolar.toFixed(2)}`);
+      return;
+    }
 
-        await db.collection("saques").add({
-          uid,
-          nome,
-          metodo,
-          identificador,
-          pontos,
-          data: new Date().toISOString()
-        });
-
-        mensagem.style.color = "lightgreen";
-        mensagem.textContent = "Saque solicitado com sucesso!";
-      });
+    await addDoc(collection(db, "saques"), {
+      uid: usuarioAtual.uid,
+      nome,
+      metodo,
+      identificador,
+      pontos: pontos,
+      valorDolar: valorDolar.toFixed(2),
+      status: "pendente",
+      data: new Date()
     });
-  </script>
+
+    await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { pontos: 0 });
+
+    alert("Solicitação enviada com sucesso!");
+    window.location.href = "dashboard.html";
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      usuarioAtual = user;
+      const snap = await getDoc(doc(db, "usuarios", user.uid));
+      if (snap.exists()) {
+        dadosUsuario = snap.data();
+      }
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+
+  window.solicitarSaque = solicitarSaque;
+</script>
+
+<!-- Monetag / PropellerAds -->
+<script src="https://propu.sh/pfe/current/tag.min.js?z=7301773" data-cfasync="false" async></script>
+
 </body>
 </html>
