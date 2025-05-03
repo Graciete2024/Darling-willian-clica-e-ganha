@@ -4,80 +4,76 @@
   <meta charset="UTF-8">
   <title>Login - Darling Business Earn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
-  <!-- Monetag (PropellerAds) -->
-  <script data-cfasync="false" type="text/javascript"
-    src="//upgulpinon.com/1?z=7194511"></script>
-
   <style>
     body {
       background-color: #121212;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
     }
-    h2 {
-      text-align: center;
-      color: #03dac6;
+    h1 {
+      color: #00ffcc;
+    }
+    input, button {
+      padding: 12px;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 350px;
+      border-radius: 8px;
+      border: none;
     }
     input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      background: #1f1f1f;
+      background-color: #1e1e1e;
       color: white;
-      border: 1px solid #03dac6;
-      border-radius: 8px;
     }
     button {
-      width: 100%;
-      background: #03dac6;
-      color: #000;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
+      background-color: #00ffcc;
+      color: black;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #02c2b0;
     }
     a {
-      color: #03dac6;
-      display: block;
-      margin-top: 10px;
-      text-align: center;
+      color: #00ffcc;
       text-decoration: none;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h2>Entrar</h2>
-  <input type="email" id="email" placeholder="E-mail">
-  <input type="password" id="senha" placeholder="Senha">
+  <h1>Login</h1>
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="senha" placeholder="Senha" />
   <button onclick="login()">Entrar</button>
   <a href="cadastro.html">Criar conta</a>
 
-  <script>
+  <!-- Monetag Ads -->
+  <script data-cfasync="false" type="text/javascript" src="//www.monetag.com/a/display.php?r=9931768"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyCNZL9KmVbM7D1m3fZlvTNgUXqS78a3NDo",
-      authDomain: "darling-willian-clica-e-ganha.firebaseapp.com",
-      projectId: "darling-willian-clica-e-ganha",
-      storageBucket: "darling-willian-clica-e-ganha.appspot.com",
-      messagingSenderId: "360974768097",
-      appId: "1:360974768097:web:a04e7c8e0e27dbdc7de3d3"
+      apiKey: "AIzaSyD3voRUhhaJUSiYUc7WnsN8iMXsNn84UNM",
+      authDomain: "darling-clica-e-ganha.firebaseapp.com",
+      projectId: "darling-clica-e-ganha",
+      storageBucket: "darling-clica-e-ganha.firebasestorage.app",
+      messagingSenderId: "993176761999",
+      appId: "1:993176761999:web:2b6b692ec80250b637e2fa",
+      measurementId: "G-ZTHNDPMTBN"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     function login() {
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
 
-      auth.signInWithEmailAndPassword(email, senha)
+      signInWithEmailAndPassword(auth, email, senha)
         .then(() => {
           window.location.href = "dashboard.html";
         })
@@ -85,6 +81,8 @@
           alert("Erro ao entrar: " + error.message);
         });
     }
+
+    window.login = login;
   </script>
 </body>
 </html>
