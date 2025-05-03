@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro - Darling Business Earn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <!-- Monetag (PropellerAds) -->
+  <script data-cfasync="false" type="text/javascript"
+    src="//upgulpinon.com/1?z=7194511"></script>
+
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #03dac6;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      background: #1f1f1f;
+      color: white;
+      border: 1px solid #03dac6;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      background: #03dac6;
+      color: #000;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #02c2b0;
+    }
+    a {
+      color: #03dac6;
+      display: block;
+      margin-top: 10px;
+      text-align: center;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Criar Conta</h2>
+  <input type="text" id="nome" placeholder="Nome completo">
+  <input type="email" id="email" placeholder="E-mail">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="cadastrar()">Cadastrar</button>
+  <a href="index.html">Já tem conta? Entrar</a>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNZL9KmVbM7D1m3fZlvTNgUXqS78a3NDo",
+      authDomain: "darling-willian-clica-e-ganha.firebaseapp.com",
+      projectId: "darling-willian-clica-e-ganha",
+      storageBucket: "darling-willian-clica-e-ganha.appspot.com",
+      messagingSenderId: "360974768097",
+      appId: "1:360974768097:web:a04e7c8e0e27dbdc7de3d3"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function cadastrar() {
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      if (!nome || !email || !senha) {
+        alert("Preencha todos os campos!");
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, senha)
+        .then((userCredential) => {
+          const userId = userCredential.user.uid;
+          return db.collection("usuarios").doc(userId).set({
+            nome: nome,
+            email: email,
+            pontos: 0,
+            vip: false
+          });
+        })
+        .then(() => {
+          alert("Conta criada com sucesso!");
+          window.location.href = "dashboard.html";
+        })
+        .catch(error => {
+          alert("Erro: " + error.message);
+        });
+    }
+  </script>
+</body>
+</html>
